@@ -1,4 +1,5 @@
 import UIKit
+// import XCTest
 
 
 //: ## 最初のサンプル
@@ -65,42 +66,102 @@ class Customer {
         return result
     }
     
-    func amountFor(element: Rental) -> Double {
-        var thisAmount = 0.0
+    func amountFor(rental: Rental) -> Double {
+        var result = 0.0
         // Calculating each line.
-        switch element.movie.priceCode {
+        switch rental.movie.priceCode {
         case .Regular:
-            thisAmount += 2.0
-            if element.daysRented > 2 {
-                thisAmount = thisAmount + (Double(element.daysRented - 2) * 1.5)
+            result += 2.0
+            if rental.daysRented > 2 {
+                result = result + (Double(rental.daysRented - 2) * 1.5)
             }
         case .NewRelase:
-            thisAmount += Double(element.daysRented) * 3.0
+            result += Double(rental.daysRented) * 3.0
         case .Children:
-            thisAmount += 1.5
-            if element.daysRented > 3 {
-                thisAmount = thisAmount + Double(element.daysRented) * 1.5
+            result += 1.5
+            if rental.daysRented > 3 {
+                result = result + Double(rental.daysRented) * 1.5
             }
         default:
             println("😐")
         }
-        return thisAmount
+        return result
     }
 }
 
+/* 
+    Writing testcases as the book suggested... 
+    but cloud not run those in the Playground (at the moment, at least).
+*/
 let verdict   = Movie(title: "The Verdict", priceCode: .Regular)
-let watchmen2 = Movie(title: "Watchmen 2", priceCode: .NewRelase)
+let watchmen2 = Movie(title: "Watchmen 2" , priceCode: .NewRelase)
+let totoro    = Movie(title: "Totoro"     , priceCode: .Children)
 
 var customer = Customer(name: "Haru")
 
-let rent1 = Rental(movie: verdict, daysRented: 2)
+let rent1 = Rental(movie: verdict,   daysRented: 2)
 let rent2 = Rental(movie: watchmen2, daysRented: 3)
+let rent3 = Rental(movie: totoro,    daysRented: 5)
 
 customer.addRental(rent1)
 customer.addRental(rent2)
 
 customer.statement()
 
+func assertTrue(condition: Bool, message: String = "Message Empty.") {
+    if condition != true {
+        println("😢 Test failed: \(message)")
+    } else {
+        println("😄 Test passes")
+    }
+}
+
+func assertMatch(expectedString str1: String, actualString str2: String, message: String = "Message Empty.") {
+    if str2.lowercaseString.rangeOfString(str1) != nil {
+        println("😙 Test passes!!")
+    } else {
+        println("😢 Test failed: \(message)")
+    }
+}
+
+assertTrue(2 == count(customer.rentals), message: "count customer rentals")
+assertTrue(2.0 == customer.amountFor(rent1), message: "test amountFor:")
+assertTrue(9.0 == customer.amountFor(rent2), message: "test amountFor:")
+assertMatch(expectedString: "amount owed is 11.0", actualString: customer.statement())
+
+
+
+//class CustomerTestCase: XCTestCase {
+//    let verdict   = Movie(title: "The Verdict", priceCode: .Regular)
+//    let watchmen2 = Movie(title: "Watchmen 2", priceCode: .NewRelase)
+//    let catten = Movie(title: "Catten", priceCode: .Children)
+//    
+//    var customer = Customer(name: "Haru")
+//
+//    func testRegularStatement() {
+//        let rent1 = Rental(movie: verdict, daysRented: 2)
+//        customer.addRental(rent1)
+//        XCTAssertEqual(1, count(customer.rentals), "Rent only one movie.")
+//        XCTAssertEqual(2.0, customer.amountFor(rent1))
+//        
+////: #### want to write somethig like this
+////: `assert_match /Amount owed is 2.0/, customer.statement()`
+//        
+//    }
+//    
+//    func testNewReleaseStatement() {
+//        let rent2 = Rental(movie: watchmen2, daysRented: 3)
+//        customer.addRental(rent2)
+//    }
+//    
+//    func testChildrenStatement() {
+//        let rent3 = Rental(movie: catten, daysRented: 4)
+//        customer.addRental(rent3)
+//    }
+//}
+
 //: ### 1.2 リファクタリングの第一歩　- テストケースの重要性
 //MARK: -
 //: ### statementメソッドの分解、再配置 - Extract Method
+
+//: ### 1.3 金額計算ルーチンの移動 - Move Method
