@@ -1,5 +1,9 @@
 import UIKit
 
+
+//: ## 最初のサンプル
+//: ### 1.1 最初の状態
+
 enum MovieType: Int {
     case Regular = 0, NewRelase, Children
 }
@@ -42,26 +46,8 @@ class Customer {
         var result = "Rental record for \(name).\n"
         
         for element in rentals {
-            //: ### Swift does not have an implicit conversion. That's why I need to assign Double value to thisAmount variable.
-            var thisAmount = 0.0
-            // Calculating each line.
-            switch element.movie.priceCode {
-            case .Regular:
-                thisAmount += 2.0
-                if element.daysRented > 2 {
-                    thisAmount = thisAmount + (Double(element.daysRented - 2) * 1.5)
-                }
-            case .NewRelase:
-                thisAmount += Double(element.daysRented) * 3.0
-            case .Children:
-                thisAmount += 1.5
-                if element.daysRented > 3 {
-                    thisAmount = thisAmount + Double(element.daysRented) * 1.5
-                }
-            default:
-                println("😐")
-            }
-            
+//: Swift does not have an implicit conversion. That's why I need to assign Double value to thisAmount variable.
+            var thisAmount = amountFor(element)
             // Add rental points
             frequentRenterPoints += 1
             // Add bonus points to two days New Release rental.
@@ -78,6 +64,28 @@ class Customer {
         result = "\(result)You earned \(frequentRenterPoints) frequent renter points"
         return result
     }
+    
+    func amountFor(element: Rental) -> Double {
+        var thisAmount = 0.0
+        // Calculating each line.
+        switch element.movie.priceCode {
+        case .Regular:
+            thisAmount += 2.0
+            if element.daysRented > 2 {
+                thisAmount = thisAmount + (Double(element.daysRented - 2) * 1.5)
+            }
+        case .NewRelase:
+            thisAmount += Double(element.daysRented) * 3.0
+        case .Children:
+            thisAmount += 1.5
+            if element.daysRented > 3 {
+                thisAmount = thisAmount + Double(element.daysRented) * 1.5
+            }
+        default:
+            println("😐")
+        }
+        return thisAmount
+    }
 }
 
 let verdict   = Movie(title: "The Verdict", priceCode: .Regular)
@@ -93,3 +101,6 @@ customer.addRental(rent2)
 
 customer.statement()
 
+//: ### 1.2 リファクタリングの第一歩　- テストケースの重要性
+//MARK: -
+//: ### statementメソッドの分解、再配置 - Extract Method
