@@ -9,29 +9,38 @@ enum MovieType: Int {
     case Regular = 0, NewRelase, Children
 }
 
+class RegularPrice {}
+class NewReleasePrice {}
+class ChildrenPrice {}
 
 class Movie {
     let title: String
-    var priceCode: MovieType
+    var priceCode: MovieType {
+        get { return self.priceCode }
+        // [P63] Custom Setter Method.
+        set {
+            self.priceCode = newValue
+            switch priceCode {
+            case .Regular:
+                let price = RegularPrice()
+            case .NewRelase:
+                let price = NewReleasePrice()
+            case .Children:
+                let price = ChildrenPrice()
+            default:
+                "Default..."
+            }
+        }
+    }
     
-    init(title: String, priceCode: MovieType) {
+    init(title: String, priceCode thePriceCode: MovieType) {
         self.title = title
-        self.priceCode = priceCode
+        self.priceCode = thePriceCode
     }
-}
 
-class Rental {
-    var movie: Movie
-    var daysRented: Int
-    
-    init(movie: Movie, daysRented: Int) {
-        self.movie = movie
-        self.daysRented = daysRented
-    }
-    
-    func charge() -> Double {
+    func charge(daysRented: Int) -> Double {
         var result = 0.0
-        switch movie.priceCode {
+        switch priceCode {
         case .Regular:
 //: Swift does not have an implicit conversion. That's why I need to assign Double value to thisAmount variable.
             result += 2.0
@@ -51,8 +60,27 @@ class Rental {
         return result
     }
     
+    func frequentRenterPoints(daysRented: Int) -> Int {
+        return (priceCode == .NewRelase && daysRented > 1) ? 2 : 1
+    }
+
+}
+
+class Rental {
+    var movie: Movie
+    var daysRented: Int
+    
+    init(movie: Movie, daysRented: Int) {
+        self.movie = movie
+        self.daysRented = daysRented
+    }
+    
+    func charge() -> Double {
+        return movie.charge(daysRented)
+    }
+    
     func frequentRenterPoints() -> Int {
-        return (movie.priceCode == .NewRelase && daysRented > 1) ? 2 : 1
+        return movie.frequentRenterPoints(daysRented)
     }
 }
 
@@ -168,6 +196,9 @@ assertMatch(expectedString: "amount owed is 11.0", actualString: customer.statem
 //: ### 1.5 レンタルポイント計算メソッドの抽出
 //: ### 1.6 一時変数の削除
 //:    Replace Loop with Collection Closure -> @rentals.injet(0) {...} # but I don't know how to make this into Swift.
+//: ### 1.8 継承の導入？
+//:    Replace type code with state/strategy
+//:     -> Apply "Self Encapsulate Field" to Type code (in this case <priceCode>)
 
 
 //class CustomerTestCase: XCTestCase {
