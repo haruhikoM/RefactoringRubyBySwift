@@ -27,6 +27,27 @@ class Rental {
         self.movie = movie
         self.daysRented = daysRented
     }
+    
+    func charge() -> Double {
+        var result = 0.0
+        switch movie.priceCode {
+        case .Regular:
+            result += 2.0
+            if daysRented > 2 {
+                result = result + (Double(daysRented - 2) * 1.5)
+            }
+        case .NewRelase:
+            result += Double(daysRented) * 3.0
+        case .Children:
+            result += 1.5
+            if daysRented > 3 {
+                result = result + Double(daysRented) * 1.5
+            }
+        default:
+            println("😐")
+        }
+        return result
+    }
 }
 
 class Customer {
@@ -67,25 +88,7 @@ class Customer {
     }
     
     func amountFor(rental: Rental) -> Double {
-        var result = 0.0
-        // Calculating each line.
-        switch rental.movie.priceCode {
-        case .Regular:
-            result += 2.0
-            if rental.daysRented > 2 {
-                result = result + (Double(rental.daysRented - 2) * 1.5)
-            }
-        case .NewRelase:
-            result += Double(rental.daysRented) * 3.0
-        case .Children:
-            result += 1.5
-            if rental.daysRented > 3 {
-                result = result + Double(rental.daysRented) * 1.5
-            }
-        default:
-            println("😐")
-        }
-        return result
+        return rental.charge()
     }
 }
 
@@ -123,6 +126,9 @@ func assertMatch(expectedString str1: String, actualString str2: String, message
         println("😢 Test failed: \(message)")
     }
 }
+
+let test: String = "This is a test phrase."
+test._bridgeToObjectiveC().containsString("test")
 
 assertTrue(2 == count(customer.rentals), message: "count customer rentals")
 assertTrue(2.0 == customer.amountFor(rent1), message: "test amountFor:")
@@ -164,4 +170,5 @@ assertMatch(expectedString: "amount owed is 11.0", actualString: customer.statem
 //MARK: -
 //: ### statementメソッドの分解、再配置 - Extract Method
 
-//: ### 1.3 金額計算ルーチンの移動 - Move Method
+//: ### 1.4 金額計算ルーチンの移動 - Move Method
+
