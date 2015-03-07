@@ -9,6 +9,7 @@ enum MovieType: Int {
     case Regular = 0, NewRelase, Children
 }
 
+
 class Movie {
     let title: String
     var priceCode: MovieType
@@ -69,21 +70,42 @@ class Customer {
     }
     
     func statement() -> String {
-        var (totalAmount, frequentRenterPoints) = (0.0, 0)
         var result = "Rental record for \(name).\n"
         
         for element in rentals {
-            // Add rental points // Add bonus points to two days New Release rental.
-            frequentRenterPoints += element.frequentRenterPoints()
-
             // Show the price of the rental
-            // result += "\t" + element.movie.title + "\t" + String(thisAmount) + "\n" <= "too complex" error
             result = "\(result)\t\(element.movie.title)\t\(element.charge())\n"
-            totalAmount += element.charge()
         }
         // Add footer line
-        result = "\(result)Amount owed is \(totalAmount)\n"
-        result = "\(result)You earned \(frequentRenterPoints) frequent renter points"
+        result = "\(result)Amount owed is \(totalCharge())\n"
+        result = "\(result)You earned \(totalFrequentRenterPoints()) frequent renter points"
+        return result
+    }
+    
+    func totalCharge() -> Double {
+        var result = 0.0
+        for element in rentals {
+            result += element.charge()
+        }
+        return result
+    }
+    
+    func totalFrequentRenterPoints() -> Int {
+        var frequentRenterPoints = 0
+        // Add rental points // Add bonus points to two days New Release rental.
+        for element in rentals {
+            frequentRenterPoints += element.frequentRenterPoints()
+        }
+        return frequentRenterPoints
+    }
+    
+    func htmlStatement() -> String {
+        var result = "<h1>Rentals for <em>\(name)</em></h1><p>\n"
+        for element in rentals {
+            result += "\t\(element.movie.title): \(element.charge())<br>\n"
+        }
+        result += "<p>You owe <em>\(totalCharge())</em><p>\n"
+        result += "On this rental you earned " + "<em>\(totalFrequentRenterPoints())</em> " + "frequent renter points<p>"
         return result
     }
 }
@@ -106,18 +128,19 @@ customer.addRental(rent1)
 customer.addRental(rent2)
 
 customer.statement()
+customer.htmlStatement()
 
 func assertTrue(condition: Bool, message: String = "Message Empty.") {
     if condition != true {
-        println("😢 Test failed: \(message)")
+        println("😢 \(message) failed")
     } else {
-        println("😄 Test passes")
+        println("😄 \(message) passes")
     }
 }
 
 func assertMatch(expectedString str1: String, actualString str2: String, message: String = "Message Empty.") {
     if str2.lowercaseString.rangeOfString(str1) != nil {
-        println("😙 Test passes!!")
+        println("😙 Test \(message) passes!!")
     } else {
         println("😢 Test failed: \(message)")
     }
@@ -126,21 +149,25 @@ func assertMatch(expectedString str1: String, actualString str2: String, message
 let test: String = "This is a test phrase."
 test._bridgeToObjectiveC().containsString("test")
 
-assertTrue(2 == count(customer.rentals), message: "count customer rentals")
-assertTrue(2.0 == rent1.charge(), message: "test amountFor: to charge() Regular")
-assertTrue(9.0 == rent2.charge(), message: "test amountFor: to charge() New Release")
-assertMatch(expectedString: "amount owed is 11.0", actualString: customer.statement())
+var counter = 1
+assertTrue(2 == count(customer.rentals), message: "Customer Test No.\(counter++)");println("Test No.\(counter - 1)")
+assertTrue(2.0 == rent1.charge(), message: "Rental Test No.\(counter++)");println("Test No.\(counter - 1)")
+assertTrue(9.0 == rent2.charge(), message: "Rental Test No.\(counter++)");println("Test No.\(counter - 1)")
+assertMatch(expectedString: "amount owed is 11.0", actualString: customer.statement(), message: "No.\(counter++)");println("Test No.\(counter - 1)")
 
 
 //: ### 1.2 リファクタリングの第一歩　- テストケースの重要性
+
 //MARK: -
 //: ### statementメソッドの分解、再配置 - Extract Method
 
 //: ### 1.4 金額計算ルーチンの移動 - Move Method
-// Replace Temp with Query ->
-// "We need to focus on clarity over performance in regard to refacoring the code"
+//:     Replace Temp with Query ->
+//:     "We need to focus on clarity over performance in regard to refacoring the code"
 
 //: ### 1.5 レンタルポイント計算メソッドの抽出
+//: ### 1.6 一時変数の削除
+//:    Replace Loop with Collection Closure -> @rentals.injet(0) {...} # but I don't know how to make this into Swift.
 
 
 //class CustomerTestCase: XCTestCase {
