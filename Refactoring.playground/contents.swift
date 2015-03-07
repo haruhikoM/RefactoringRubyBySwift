@@ -32,6 +32,7 @@ class Rental {
         var result = 0.0
         switch movie.priceCode {
         case .Regular:
+//: Swift does not have an implicit conversion. That's why I need to assign Double value to thisAmount variable.
             result += 2.0
             if daysRented > 2 {
                 result = result + (Double(daysRented - 2) * 1.5)
@@ -47,6 +48,10 @@ class Rental {
             println("😐")
         }
         return result
+    }
+    
+    func frequentRenterPoints() -> Int {
+        return (movie.priceCode == .NewRelase && daysRented > 1) ? 2 : 1
     }
 }
 
@@ -68,27 +73,18 @@ class Customer {
         var result = "Rental record for \(name).\n"
         
         for element in rentals {
-//: Swift does not have an implicit conversion. That's why I need to assign Double value to thisAmount variable.
-            var thisAmount = amountFor(element)
-            // Add rental points
-            frequentRenterPoints += 1
-            // Add bonus points to two days New Release rental.
-            if element.movie.priceCode == .NewRelase && element.daysRented > 1 {
-                frequentRenterPoints += 1
-            }
+            // Add rental points // Add bonus points to two days New Release rental.
+            frequentRenterPoints += element.frequentRenterPoints()
+
             // Show the price of the rental
             // result += "\t" + element.movie.title + "\t" + String(thisAmount) + "\n" <= "too complex" error
-            result = "\(result)\t\(element.movie.title)\t\(thisAmount)\n"
-            totalAmount += thisAmount
+            result = "\(result)\t\(element.movie.title)\t\(element.charge())\n"
+            totalAmount += element.charge()
         }
         // Add footer line
         result = "\(result)Amount owed is \(totalAmount)\n"
         result = "\(result)You earned \(frequentRenterPoints) frequent renter points"
         return result
-    }
-    
-    func amountFor(rental: Rental) -> Double {
-        return rental.charge()
     }
 }
 
@@ -131,17 +127,27 @@ let test: String = "This is a test phrase."
 test._bridgeToObjectiveC().containsString("test")
 
 assertTrue(2 == count(customer.rentals), message: "count customer rentals")
-assertTrue(2.0 == customer.amountFor(rent1), message: "test amountFor:")
-assertTrue(9.0 == customer.amountFor(rent2), message: "test amountFor:")
+assertTrue(2.0 == rent1.charge(), message: "test amountFor: to charge() Regular")
+assertTrue(9.0 == rent2.charge(), message: "test amountFor: to charge() New Release")
 assertMatch(expectedString: "amount owed is 11.0", actualString: customer.statement())
 
+
+//: ### 1.2 リファクタリングの第一歩　- テストケースの重要性
+//MARK: -
+//: ### statementメソッドの分解、再配置 - Extract Method
+
+//: ### 1.4 金額計算ルーチンの移動 - Move Method
+// Replace Temp with Query ->
+// "We need to focus on clarity over performance in regard to refacoring the code"
+
+//: ### 1.5 レンタルポイント計算メソッドの抽出
 
 
 //class CustomerTestCase: XCTestCase {
 //    let verdict   = Movie(title: "The Verdict", priceCode: .Regular)
 //    let watchmen2 = Movie(title: "Watchmen 2", priceCode: .NewRelase)
 //    let catten = Movie(title: "Catten", priceCode: .Children)
-//    
+//
 //    var customer = Customer(name: "Haru")
 //
 //    func testRegularStatement() {
@@ -149,26 +155,19 @@ assertMatch(expectedString: "amount owed is 11.0", actualString: customer.statem
 //        customer.addRental(rent1)
 //        XCTAssertEqual(1, count(customer.rentals), "Rent only one movie.")
 //        XCTAssertEqual(2.0, customer.amountFor(rent1))
-//        
+//
 ////: #### want to write somethig like this
 ////: `assert_match /Amount owed is 2.0/, customer.statement()`
-//        
+//
 //    }
-//    
+//
 //    func testNewReleaseStatement() {
 //        let rent2 = Rental(movie: watchmen2, daysRented: 3)
 //        customer.addRental(rent2)
 //    }
-//    
+//
 //    func testChildrenStatement() {
 //        let rent3 = Rental(movie: catten, daysRented: 4)
 //        customer.addRental(rent3)
 //    }
 //}
-
-//: ### 1.2 リファクタリングの第一歩　- テストケースの重要性
-//MARK: -
-//: ### statementメソッドの分解、再配置 - Extract Method
-
-//: ### 1.4 金額計算ルーチンの移動 - Move Method
-
