@@ -9,14 +9,36 @@ enum MovieType: Int {
     case Regular = 0, NewRelase, Children
 }
 
-class Price {}
-class RegularPrice: Price {}
-class NewReleasePrice: Price {}
-class ChildrenPrice: Price {}
+
+protocol Chargeable { mutating func charge(daysRented: Int) -> Double }
+
+class RegularPrice: Chargeable {
+    func charge(daysRented: Int) -> Double {
+        var result = 2.0
+        if daysRented > 2 {
+            result += Double(daysRented - 2) * 1.5
+        }
+        return result
+    }
+}
+class NewReleasePrice: Chargeable {
+    func charge(daysRented: Int) -> Double {
+        return Double(daysRented * 3)
+    }
+}
+class ChildrenPrice: Chargeable {
+    func charge(daysRented: Int) -> Double {
+        var result = 1.5
+        if daysRented > 3 {
+            result += Double(daysRented - 3) * 1.5
+        }
+        return result
+    }
+}
 
 class Movie {
     let title: String
-    var price: Price?
+    var price: Chargeable?
     var priceCode: MovieType {
         // [P63] Custom Setter Method.
         didSet {
@@ -28,15 +50,15 @@ class Movie {
             case .Children:
                 price = ChildrenPrice()
             default:
-                "Default..."
+                println("This suppesed not to be called 😨 1")
             }
         }
     }
     
     init(title: String, priceCode thePriceCode: MovieType) {
         self.title = title
-        priceCode = thePriceCode
-        price = nil
+        self.price = nil
+        self.priceCode = thePriceCode
     }
 
     func charge(daysRented: Int) -> Double {
@@ -44,17 +66,22 @@ class Movie {
         switch priceCode {
         case .Regular:
 //: Swift does not have an implicit conversion. That's why I need to assign Double value to thisAmount variable.
-            result += 2.0
-            if daysRented > 2 {
-                result = result + (Double(daysRented - 2) * 1.5)
-            }
+            // If swift had interfaces, it easy to add Chargable... oh wait, Protocol? Is that you???
+//            if self.price != nil {
+//                return (price as! RegularPrice).charge(daysRented)
+//            } else {
+//                println("This suppesed not to be called 😨 2")
+//            }
+//            return (price as! RegularPrice).charge(daysRented)
+            return Double(daysRented)
         case .NewRelase:
-            result += Double(daysRented) * 3.0
+            return Double(daysRented) * 3.0
         case .Children:
             result += 1.5
             if daysRented > 3 {
                 result = result + Double(daysRented) * 1.5
             }
+
         default:
             println("😐")
         }
@@ -171,7 +198,7 @@ func assertMatch(expectedString str1: String, actualString str2: String, message
     if str2.lowercaseString.rangeOfString(str1) != nil {
         println("😙 Test \(message) passes!!")
     } else {
-        println("😢 Test failed: \(message)")
+        println("😢 Test failed: \(message) expected->\(str1) actual->\(str2)")
     }
 }
 
