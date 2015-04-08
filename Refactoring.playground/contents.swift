@@ -38,54 +38,41 @@ class ChildrenPrice: Chargeable {
 
 class Movie {
     let title: String
-    var price: Chargeable?
-    var priceCode: MovieType {
-        // [P63] Custom Setter Method.
-        didSet {
-            switch priceCode {
-            case .Regular:
-                price = RegularPrice()
-            case .NewRelase:
-                price = NewReleasePrice()
-            case .Children:
-                price = ChildrenPrice()
-            default:
-                println("This suppesed not to be called 😨 1")
-            }
-        }
-    }
+    var price: Chargeable
+    var priceCode: MovieType
+//        {
+//        // [P63] Custom Setter Method.
+//        didSet {
+//            switch priceCode {
+//            case .Regular:
+//                price = RegularPrice()
+//            case .NewRelase:
+//                price = NewReleasePrice()
+//            case .Children:
+//                price = ChildrenPrice()
+//            default:
+//                println("This suppesed not to be called 😨 1")
+//            }
+//        }
+//    }
     
     init(title: String, priceCode thePriceCode: MovieType) {
         self.title = title
-        self.price = nil
         self.priceCode = thePriceCode
+        switch priceCode {
+        case .Regular:
+            price = RegularPrice()
+        case .NewRelase:
+            price = NewReleasePrice()
+        case .Children:
+            price = ChildrenPrice()
+        default:
+            println("This suppesed not to be called 😨 1")
+        }
     }
 
     func charge(daysRented: Int) -> Double {
-        var result = 0.0
-        switch priceCode {
-        case .Regular:
-//: Swift does not have an implicit conversion. That's why I need to assign Double value to thisAmount variable.
-            // If swift had interfaces, it easy to add Chargable... oh wait, Protocol? Is that you???
-//            if self.price != nil {
-//                return (price as! RegularPrice).charge(daysRented)
-//            } else {
-//                println("This suppesed not to be called 😨 2")
-//            }
-//            return (price as! RegularPrice).charge(daysRented)
-            return Double(daysRented)
-        case .NewRelase:
-            return Double(daysRented) * 3.0
-        case .Children:
-            result += 1.5
-            if daysRented > 3 {
-                result = result + Double(daysRented) * 1.5
-            }
-
-        default:
-            println("😐")
-        }
-        return result
+        return price.charge(daysRented)
     }
     
     func frequentRenterPoints(daysRented: Int) -> Int {
