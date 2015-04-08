@@ -12,7 +12,13 @@ enum MovieType: Int {
 
 protocol Chargeable { mutating func charge(daysRented: Int) -> Double }
 
-class RegularPrice: Chargeable {
+class DefaultPrice {
+    func frequentRenterPoints(daysRented: Int) -> Int {
+        return 1
+    }
+}
+
+class RegularPrice: DefaultPrice, Chargeable {
     func charge(daysRented: Int) -> Double {
         var result = 2.0
         if daysRented > 2 {
@@ -21,12 +27,17 @@ class RegularPrice: Chargeable {
         return result
     }
 }
-class NewReleasePrice: Chargeable {
+class NewReleasePrice:DefaultPrice, Chargeable {
     func charge(daysRented: Int) -> Double {
         return Double(daysRented * 3)
     }
+    
+    override func frequentRenterPoints(daysRented: Int) -> Int {
+        let points = daysRented > 1 ? 2 : 1
+        return points
+    }
 }
-class ChildrenPrice: Chargeable {
+class ChildrenPrice:DefaultPrice, Chargeable {
     func charge(daysRented: Int) -> Double {
         var result = 1.5
         if daysRented > 3 {
@@ -38,23 +49,8 @@ class ChildrenPrice: Chargeable {
 
 class Movie {
     let title: String
-    var price: Chargeable
+    var price: protocol<Chargeable> // <- THIS is what I'm lookig for!
     var priceCode: MovieType
-//        {
-//        // [P63] Custom Setter Method.
-//        didSet {
-//            switch priceCode {
-//            case .Regular:
-//                price = RegularPrice()
-//            case .NewRelase:
-//                price = NewReleasePrice()
-//            case .Children:
-//                price = ChildrenPrice()
-//            default:
-//                println("This suppesed not to be called 😨 1")
-//            }
-//        }
-//    }
     
     init(title: String, priceCode thePriceCode: MovieType) {
         self.title = title
@@ -67,7 +63,7 @@ class Movie {
         case .Children:
             price = ChildrenPrice()
         default:
-            println("This suppesed not to be called 😨 1")
+            println("De De Default!")
         }
     }
 
@@ -76,7 +72,10 @@ class Movie {
     }
     
     func frequentRenterPoints(daysRented: Int) -> Int {
-        return (priceCode == .NewRelase && daysRented > 1) ? 2 : 1
+        // I cannot use price here because it is a Chargeable type...
+        // What am I gonna do? uhm....
+        return (price as! DefaultPrice).frequentRenterPoints(daysRented)
+//        return (priceCode == .NewRelase && daysRented > 1) ? 2 : 1
     }
 
 }
